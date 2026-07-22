@@ -1,49 +1,71 @@
 <script setup lang="ts">
 import { useDocumentStore } from '@/stores/document';
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const doc = useDocumentStore();
 const isDragOver = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
+let dragCounter = 0;
 
 function handleDrop(e: DragEvent): void {
   e.preventDefault();
   isDragOver.value = false;
+  dragCounter = 0;
 
   const file = e.dataTransfer?.files[0];
   if (file) void readFile(file);
 }
 
-function handleDragOver(e: DragEvent): void {
+function handleDragEnter(e: DragEvent): void {
   e.preventDefault();
+  dragCounter++;
   isDragOver.value = true;
 }
 
+function handleDragOver(e: DragEvent): void {
+  e.preventDefault();
+}
+
 function handleDragLeave(): void {
-  isDragOver.value = false;
+  dragCounter--;
+  if (dragCounter <= 0) {
+    isDragOver.value = false;
+    dragCounter = 0;
+  }
 }
 
 function handleFileSelect(e: Event): void {
   const target = e.target as HTMLInputElement;
   const file = target.files?.[0];
   if (file) void readFile(file);
+  // Reset so re-selecting the same file fires change
+  target.value = '';
 }
 
 async function readFile(file: File): Promise<void> {
-  const validTypes = ['.md', '.txt', '.markdown'];
-  const ext = '.' + (file.name.split('.').pop() ?? '');
-  if (!validTypes.includes(ext.toLowerCase())) {
-    alert('Please select a .md, .txt, or .markdown file.');
-    return;
+  const name = file.name.toLowerCase();
+  const validExts = ['.md', '.txt', '.markdown'];
+  const hasValidExt = validExts.some((ext) => name.endsWith(ext));
+
+  if (!hasValidExt) {
+    // Allow extensionless files as plain text
+    if (name.includes('.')) {
+      console.warn('Unsupported file type:', name);
+      return;
+    }
   }
 
   if (file.size > 5 * 1024 * 1024) {
-    alert('File is too large. Maximum size is 5 MB.');
+    console.warn('File too large:', file.size);
     return;
   }
 
-  const text = await file.text();
-  doc.setInput(text);
+  try {
+    const text = await file.text();
+    doc.setInput(text);
+  } catch (err) {
+    console.error('Failed to read file:', err);
+  }
 }
 
 function openFile(): void {
@@ -57,6 +79,21 @@ function loadSample(): void {
 function toggleMode(): void {
   doc.mode = doc.mode === 'markdown' ? 'plain' : 'markdown';
 }
+
+function handleKeydown(e: KeyboardEvent): void {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'o') {
+    e.preventDefault();
+    openFile();
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
 
 const SAMPLE_TEXT = `# The Art of Reading
 
@@ -102,6 +139,7 @@ Color-coding parts of speech makes the **grammatical structure** visible at a gl
     class="input-pane"
     :class="{ 'drag-over': isDragOver }"
     @drop="handleDrop"
+    @dragenter="handleDragEnter"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
   >

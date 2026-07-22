@@ -14,6 +14,7 @@ const md = new MarkdownIt({
   html: false,
   linkify: true,
   typographer: false,
+  breaks: true, // treat single newlines as <br>
 });
 
 /** Escape HTML special characters. */
@@ -45,21 +46,20 @@ function collectInlineSegments(
   children: MarkdownIt.Token[],
   segments: TextSegment[],
   counter: { n: number },
-  insideAutolink: boolean = false,
 ): void {
-  let skipNext = false;
+  let skipAutolink = false;
 
   for (let i = 0; i < children.length; i++) {
     const child = children[i]!;
 
-    if (skipNext) {
-      if (child.type === 'link_close') skipNext = false;
+    if (skipAutolink) {
+      if (child.type === 'link_close') skipAutolink = false;
       continue;
     }
 
     // Skip autolink content (the URL text inside autolinks)
     if (child.type === 'link_open' && child.markup === 'linkify') {
-      skipNext = true;
+      skipAutolink = true;
       continue;
     }
 
@@ -67,16 +67,11 @@ function collectInlineSegments(
       continue;
     }
 
-    if (child.type === 'text' && child.content && !insideAutolink) {
+    if (child.type === 'text' && child.content) {
       segments.push({
         id: `s${counter.n++}`,
         text: child.content,
       });
-    }
-
-    if (child.type === 'softbreak' || child.type === 'hardbreak') {
-      // These don't produce taggable text
-      continue;
     }
   }
 }
@@ -90,6 +85,8 @@ export function extractSegments(input: string, mode: InputMode): TextSegment[] {
   const counter = { n: 0 };
 
   if (mode === 'plain') {
+    // In plain mode, split on double newlines for paragraphs.
+    // Preserve single newlines within paragraphs.
     const paragraphs = input.split(/\n\s*\n/);
     for (const para of paragraphs) {
       const trimmed = para.trim();
@@ -142,6 +139,38 @@ function wrapWithTags(text: string, tokens: readonly TaggedToken[]): string {
 }
 
 /**
+ * Convert newlines within plain text to <br> tags for proper rendering.
+ */
+function plainTextToHtml(text: string): string {
+  return escapeHtml(text).replace(/\n/g, '<br>\n');
+}
+
+/**
+ * Wrap plain text with tags, preserving newlines as <br>.
+ */
+function wrapPlainWithTags(text: string, tokens: readonly TaggedToken[]): string {
+  if (tokens.length === 0) return plainTextToHtml(text);
+
+  let result = '';
+  let lastEnd = 0;
+
+  for (const t of tokens) {
+    if (t.start > lastEnd) {
+      result += plainTextToHtml(text.slice(lastEnd, t.start));
+    }
+    const tag = t.upos.toLowerCase();
+    result += `<span class="pos-${tag}" data-upos="${t.upos}">${escapeHtml(t.text)}</span>`;
+    lastEnd = t.end;
+  }
+
+  if (lastEnd < text.length) {
+    result += plainTextToHtml(text.slice(lastEnd));
+  }
+
+  return result;
+}
+
+/**
  * Render inline children back to HTML, wrapping tagged text segments with POS spans.
  */
 function renderInlineChildren(
@@ -180,10 +209,10 @@ function renderInlineChildren(
         html += `<code>${escapeHtml(child.content)}</code>`;
         break;
       case 'softbreak':
-        html += '\n';
+        html += '<br>\n';
         break;
       case 'hardbreak':
-        html += '<br>';
+        html += '<br>\n';
         break;
       case 'link_open': {
         if (child.markup === 'linkify') {
@@ -218,7 +247,6 @@ function renderInlineChildren(
         html += '</strong>';
         break;
       case 'html_inline':
-        // Pass through (will be sanitized by DOMPurify)
         html += child.content;
         break;
       default:
@@ -254,7 +282,9 @@ export function renderHtml(
 
       const segId = `s${counter.n++}`;
       const segTags = tags.get(segId);
-      const content = segTags ? wrapWithTags(trimmed, segTags) : escapeHtml(trimmed);
+      const content = segTags
+        ? wrapPlainWithTags(trimmed, segTags)
+        : plainTextToHtml(trimmed);
       html += `<p>${content}</p>\n`;
     }
 
@@ -262,16 +292,10 @@ export function renderHtml(
   }
 
   // Markdown mode — walk the token tree identically to extractSegments
-  const tokens = md.parse(input, {});
+  const rendererTokens = md.parse(input, {});
   const counter = { n: 0 };
 
-  // Use markdown-it renderer with an overridden text rule
-  const env = {};
-  const rendererTokens = md.parse(input, env);
-
-  // Instead of modifying the renderer, re-render manually for full control
   let html = '';
-  const openTags: string[] = [];
 
   for (const token of rendererTokens) {
     if (SKIP_TOKEN_TYPES.has(token.type)) {
@@ -294,7 +318,6 @@ export function renderHtml(
 
     // Block-level open/close tokens
     if (token.nesting === 1) {
-      // Opening tag
       let attrs = '';
       if (token.type === 'ordered_list_open') {
         const start = token.attrGet('start');
@@ -302,14 +325,10 @@ export function renderHtml(
       }
       html += `<${token.tag}${attrs}>`;
       if (token.block) html += '\n';
-      openTags.push(token.tag);
     } else if (token.nesting === -1) {
-      // Closing tag
       html += `</${token.tag}>`;
       if (token.block) html += '\n';
-      openTags.pop();
     } else if (token.nesting === 0) {
-      // Self-closing
       if (token.type === 'hr') {
         html += '<hr>\n';
       } else if (token.content) {
@@ -317,9 +336,6 @@ export function renderHtml(
       }
     }
   }
-
-  // Suppress eslint unused vars for tokens (used for segment counting reference)
-  void tokens;
 
   return html;
 }

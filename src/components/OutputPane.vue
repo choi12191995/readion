@@ -7,6 +7,12 @@ const doc = useDocumentStore();
 const outputEl = ref<HTMLElement | null>(null);
 const tooltipTarget = ref<HTMLElement | null>(null);
 
+const SUPPORTED_LANGS = [
+  { code: 'en', label: 'English' },
+  { code: 'zh', label: 'Chinese' },
+  { code: 'ja', label: 'Japanese' },
+];
+
 function handleMouseOver(e: Event): void {
   const target = e.target as HTMLElement;
   if (target.dataset['upos']) {
@@ -21,10 +27,15 @@ function handleMouseOut(e: Event): void {
   }
 }
 
+function setLangOverride(e: Event): void {
+  const val = (e.target as HTMLSelectElement).value;
+  doc.setLanguageOverride(val === 'auto' ? null : val);
+}
+
 async function copyAsHtml(): Promise<void> {
   if (!outputEl.value) return;
   try {
-    const html = doc.renderedHtml;
+    const html = doc.getHtmlWithInlineStyles();
     const blob = new Blob([html], { type: 'text/html' });
     const textBlob = new Blob([outputEl.value.innerText], { type: 'text/plain' });
     await navigator.clipboard.write([
@@ -33,12 +44,22 @@ async function copyAsHtml(): Promise<void> {
         'text/plain': textBlob,
       }),
     ]);
+    copyFeedback.value = 'Copied!';
+    setTimeout(() => { copyFeedback.value = ''; }, 2000);
   } catch {
-    // Fallback to text copy
-    const text = outputEl.value.innerText;
-    await navigator.clipboard.writeText(text);
+    try {
+      const text = outputEl.value?.innerText ?? '';
+      await navigator.clipboard.writeText(text);
+      copyFeedback.value = 'Copied as text';
+      setTimeout(() => { copyFeedback.value = ''; }, 2000);
+    } catch {
+      copyFeedback.value = 'Copy failed';
+      setTimeout(() => { copyFeedback.value = ''; }, 2000);
+    }
   }
 }
+
+const copyFeedback = ref('');
 
 function printView(): void {
   window.print();
@@ -49,12 +70,23 @@ function printView(): void {
   <div class="output-pane">
     <div class="output-toolbar">
       <div class="output-status">
-        <span
-          v-if="doc.detectedLang"
-          class="status-lang"
+        <select
+          class="lang-select"
+          :value="doc.langOverride ?? 'auto'"
+          title="Language"
+          @change="setLangOverride"
         >
-          {{ doc.detectedLang.toUpperCase() }}
-        </span>
+          <option value="auto">
+            Auto ({{ doc.detectedLang.toUpperCase() }})
+          </option>
+          <option
+            v-for="lang in SUPPORTED_LANGS"
+            :key="lang.code"
+            :value="lang.code"
+          >
+            {{ lang.label }}
+          </option>
+        </select>
         <span
           v-if="doc.currentEngineId"
           class="status-engine"
@@ -73,8 +105,18 @@ function printView(): void {
         >
           · coloring… {{ doc.progress }}%
         </span>
+        <span
+          v-if="doc.truncated"
+          class="status-truncated"
+        >
+          · truncated to 200k chars
+        </span>
       </div>
       <div class="output-actions">
+        <span
+          v-if="copyFeedback"
+          class="copy-feedback"
+        >{{ copyFeedback }}</span>
         <button
           class="toolbar-btn"
           title="Copy as rich HTML"
@@ -91,6 +133,14 @@ function printView(): void {
           🖨️ Print
         </button>
       </div>
+    </div>
+
+    <!-- Error banner -->
+    <div
+      v-if="doc.status === 'error'"
+      class="error-banner"
+    >
+      ⚠️ {{ doc.errorMessage || 'An error occurred during tagging.' }}
     </div>
 
     <div
@@ -146,11 +196,35 @@ function printView(): void {
 .output-status {
   font-size: 0.8rem;
   color: var(--color-muted);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.lang-select {
+  font-size: 0.8rem;
+  padding: 2px var(--space-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.status-truncated {
+  color: var(--color-danger);
 }
 
 .output-actions {
   display: flex;
   gap: var(--space-xs);
+  align-items: center;
+}
+
+.copy-feedback {
+  font-size: 0.75rem;
+  color: var(--color-success);
+  font-weight: 500;
 }
 
 .toolbar-btn {
@@ -171,6 +245,18 @@ function printView(): void {
 .toolbar-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.error-banner {
+  padding: var(--space-sm) var(--space-md);
+  background: #fef2f2;
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--color-danger);
+}
+
+.dark .error-banner {
+  background: #3b1111;
 }
 
 .output-content {

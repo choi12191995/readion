@@ -25,8 +25,8 @@ dev-dist
 # Models & dictionaries (binary; fetched at runtime)
 public/models/*
 !public/models/.gitkeep
-public/dict/*
-!public/dict/.gitkeep
+public/dict/kuromoji/*.gz
+public/dict/**/.gitkeep
 
 # Cursor
 .cursor

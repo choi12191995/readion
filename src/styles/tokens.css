@@ -176,22 +176,55 @@ button {
 .pos-verb { color: var(--pos-verb); font-weight: var(--pos-verb-fw); font-style: var(--pos-verb-fs); text-decoration: var(--pos-verb-td); }
 .pos-x { color: var(--pos-x); font-weight: var(--pos-x-fw); font-style: var(--pos-x-fs); text-decoration: var(--pos-x-td); }
 
-/* Print stylesheet */
+/* Print stylesheet — hide all chrome, show only the reading view */
 @media print {
   .app-header,
   .app-nav,
   .input-pane,
   .pos-legend,
-  .toolbar {
+  .toolbar,
+  .output-toolbar,
+  .output-actions,
+  .output-status,
+  .error-banner,
+  .dark-toggle,
+  .pane-input,
+  .input-toolbar,
+  .legend-controls,
+  .legend-chips {
     display: none !important;
   }
   body {
-    background: white;
-    color: #24292f;
+    background: white !important;
+    color: #24292f !important;
   }
-  .output-pane {
+  /* Force light palette for print */
+  :root {
+    --color-bg: #ffffff !important;
+    --color-text: #24292f !important;
+    --pos-noun: #1565C0 !important;
+    --pos-propn: #6A1B9A !important;
+    --pos-verb: #C62828 !important;
+    --pos-aux: #E65100 !important;
+    --pos-adj: #2E7D32 !important;
+    --pos-adv: #00838F !important;
+    --pos-pron: #AD1457 !important;
+    --pos-adp: #616161 !important;
+    --pos-det: #5D4037 !important;
+    --pos-cconj: #37474F !important;
+    --pos-sconj: #37474F !important;
+    --pos-part: #6D4C41 !important;
+    --pos-intj: #D81B60 !important;
+    --pos-num: #4527A0 !important;
+  }
+  .output-pane,
+  .output-content {
     max-width: 100% !important;
     padding: 0 !important;
+    margin: 0 !important;
+  }
+  .reader-panes {
+    display: block !important;
   }
 }
 

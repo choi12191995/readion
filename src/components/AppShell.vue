@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@/stores/settings';
 import { useRouter, useRoute } from 'vue-router';
+import { onMounted, onUnmounted } from 'vue';
 
 const settings = useSettingsStore();
 const router = useRouter();
@@ -17,11 +18,18 @@ function handleKeydown(e: KeyboardEvent): void {
     e.preventDefault();
     void router.push('/settings');
   }
+  if (e.key === 'Escape') {
+    // Close any open dialogs (future use)
+  }
 }
 
-if (typeof window !== 'undefined') {
+onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
-}
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
 </script>
 
 <template>

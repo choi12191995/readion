@@ -25,6 +25,10 @@ interface KuromojiBuilder {
   build(callback: (err: Error | null, tokenizer: KuromojiTokenizer) => void): void;
 }
 
+interface KuromojiModule {
+  builder: (opts: { dicPath: string }) => KuromojiBuilder;
+}
+
 /**
  * Japanese POS tagger using kuromoji.js with IPAdic dictionary.
  * Dictionary files are served from /dict/kuromoji/ and cached by the service worker.
@@ -39,21 +43,37 @@ export function createEngine(): TaggerEngine {
     async load() {
       if (loaded) return;
 
-      const kuromoji = await import('kuromoji' as string) as {
-        default?: { builder: (opts: { dicPath: string }) => KuromojiBuilder };
-        builder?: (opts: { dicPath: string }) => KuromojiBuilder;
-      };
+      // Dynamic import — kuromoji is a CJS module
+      const kuromojiMod = await import('kuromoji' as string);
+      const kuromoji: KuromojiModule = (kuromojiMod.default ?? kuromojiMod) as KuromojiModule;
 
-      const builderFn = kuromoji.default?.builder ?? kuromoji.builder;
-      if (!builderFn) throw new Error('kuromoji module has no builder function');
+      if (!kuromoji.builder) {
+        throw new Error('kuromoji module has no builder function');
+      }
 
-      const dicPath = `${import.meta.env.BASE_URL}dict/kuromoji/`;
+      // Resolve dictionary path — must end with /
+      // In worker context, import.meta.url points to the worker script
+      // We need an absolute URL to the dict directory
+      let dicPath: string;
+      try {
+        // Try to construct a proper URL for the dict path
+        const base = typeof self !== 'undefined' && 'location' in self
+          ? self.location.origin
+          : '';
+        dicPath = `${base}/dict/kuromoji/`;
+      } catch {
+        dicPath = '/dict/kuromoji/';
+      }
 
       tokenizer = await new Promise<KuromojiTokenizer>((resolve, reject) => {
-        builderFn({ dicPath }).build((err, tok) => {
-          if (err) reject(err);
-          else resolve(tok);
-        });
+        try {
+          kuromoji.builder({ dicPath }).build((err, tok) => {
+            if (err) reject(err);
+            else resolve(tok);
+          });
+        } catch (buildErr) {
+          reject(buildErr);
+        }
       });
 
       loaded = true;
