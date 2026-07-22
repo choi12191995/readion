@@ -1,0 +1,212 @@
+/* Readion design tokens */
+:root {
+  /* Base palette */
+  --color-bg: #ffffff;
+  --color-text: #24292f;
+  --color-border: #d0d7de;
+  --color-surface: #f6f8fa;
+  --color-accent: #1565c0;
+  --color-accent-text: #ffffff;
+  --color-muted: #656d76;
+  --color-danger: #cf222e;
+  --color-success: #1a7f37;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --font-mono: 'SF Mono', 'Cascadia Mono', 'Consolas', monospace;
+  --font-body: var(--font-sans);
+  --font-size: 16px;
+  --line-height: 1.6;
+  --column-width: 68ch;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Shapes */
+  --radius: 8px;
+  --radius-sm: 4px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  /* POS colors (defaults — overwritten by theme store) */
+  --pos-adj: #2e7d32;
+  --pos-adp: #616161;
+  --pos-adv: #00838f;
+  --pos-aux: #e65100;
+  --pos-cconj: #37474f;
+  --pos-det: #5d4037;
+  --pos-intj: #d81b60;
+  --pos-noun: #1565c0;
+  --pos-num: #4527a0;
+  --pos-part: #6d4c41;
+  --pos-pron: #ad1457;
+  --pos-propn: #6a1b9a;
+  --pos-punct: inherit;
+  --pos-sconj: #37474f;
+  --pos-sym: inherit;
+  --pos-verb: #c62828;
+  --pos-x: inherit;
+
+  /* POS font styles */
+  --pos-adj-fw: inherit;
+  --pos-adj-fs: inherit;
+  --pos-adj-td: inherit;
+  --pos-adp-fw: inherit;
+  --pos-adp-fs: inherit;
+  --pos-adp-td: inherit;
+  --pos-adv-fw: inherit;
+  --pos-adv-fs: inherit;
+  --pos-adv-td: inherit;
+  --pos-aux-fw: inherit;
+  --pos-aux-fs: inherit;
+  --pos-aux-td: inherit;
+  --pos-cconj-fw: inherit;
+  --pos-cconj-fs: inherit;
+  --pos-cconj-td: inherit;
+  --pos-det-fw: inherit;
+  --pos-det-fs: inherit;
+  --pos-det-td: inherit;
+  --pos-intj-fw: inherit;
+  --pos-intj-fs: inherit;
+  --pos-intj-td: inherit;
+  --pos-noun-fw: inherit;
+  --pos-noun-fs: inherit;
+  --pos-noun-td: inherit;
+  --pos-num-fw: inherit;
+  --pos-num-fs: inherit;
+  --pos-num-td: inherit;
+  --pos-part-fw: inherit;
+  --pos-part-fs: inherit;
+  --pos-part-td: inherit;
+  --pos-pron-fw: inherit;
+  --pos-pron-fs: inherit;
+  --pos-pron-td: inherit;
+  --pos-propn-fw: inherit;
+  --pos-propn-fs: inherit;
+  --pos-propn-td: inherit;
+  --pos-punct-fw: inherit;
+  --pos-punct-fs: inherit;
+  --pos-punct-td: inherit;
+  --pos-sconj-fw: inherit;
+  --pos-sconj-fs: inherit;
+  --pos-sconj-td: inherit;
+  --pos-sym-fw: inherit;
+  --pos-sym-fs: inherit;
+  --pos-sym-td: inherit;
+  --pos-verb-fw: inherit;
+  --pos-verb-fs: inherit;
+  --pos-verb-td: inherit;
+  --pos-x-fw: inherit;
+  --pos-x-fs: inherit;
+  --pos-x-td: inherit;
+}
+
+.dark {
+  --color-bg: #1e1e1e;
+  --color-text: #d4d4d4;
+  --color-border: #3e3e42;
+  --color-surface: #252526;
+  --color-accent: #9cdcfe;
+  --color-accent-text: #1e1e1e;
+  --color-muted: #8b949e;
+  --color-danger: #f48771;
+  --color-success: #b5cea8;
+}
+
+/* Global reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: var(--font-size);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  line-height: var(--line-height);
+  color: var(--color-text);
+  background: var(--color-bg);
+  min-height: 100vh;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* POS span styling */
+.pos-adj { color: var(--pos-adj); font-weight: var(--pos-adj-fw); font-style: var(--pos-adj-fs); text-decoration: var(--pos-adj-td); }
+.pos-adp { color: var(--pos-adp); font-weight: var(--pos-adp-fw); font-style: var(--pos-adp-fs); text-decoration: var(--pos-adp-td); }
+.pos-adv { color: var(--pos-adv); font-weight: var(--pos-adv-fw); font-style: var(--pos-adv-fs); text-decoration: var(--pos-adv-td); }
+.pos-aux { color: var(--pos-aux); font-weight: var(--pos-aux-fw); font-style: var(--pos-aux-fs); text-decoration: var(--pos-aux-td); }
+.pos-cconj { color: var(--pos-cconj); font-weight: var(--pos-cconj-fw); font-style: var(--pos-cconj-fs); text-decoration: var(--pos-cconj-td); }
+.pos-det { color: var(--pos-det); font-weight: var(--pos-det-fw); font-style: var(--pos-det-fs); text-decoration: var(--pos-det-td); }
+.pos-intj { color: var(--pos-intj); font-weight: var(--pos-intj-fw); font-style: var(--pos-intj-fs); text-decoration: var(--pos-intj-td); }
+.pos-noun { color: var(--pos-noun); font-weight: var(--pos-noun-fw); font-style: var(--pos-noun-fs); text-decoration: var(--pos-noun-td); }
+.pos-num { color: var(--pos-num); font-weight: var(--pos-num-fw); font-style: var(--pos-num-fs); text-decoration: var(--pos-num-td); }
+.pos-part { color: var(--pos-part); font-weight: var(--pos-part-fw); font-style: var(--pos-part-fs); text-decoration: var(--pos-part-td); }
+.pos-pron { color: var(--pos-pron); font-weight: var(--pos-pron-fw); font-style: var(--pos-pron-fs); text-decoration: var(--pos-pron-td); }
+.pos-propn { color: var(--pos-propn); font-weight: var(--pos-propn-fw); font-style: var(--pos-propn-fs); text-decoration: var(--pos-propn-td); }
+.pos-punct { color: var(--pos-punct); font-weight: var(--pos-punct-fw); font-style: var(--pos-punct-fs); text-decoration: var(--pos-punct-td); }
+.pos-sconj { color: var(--pos-sconj); font-weight: var(--pos-sconj-fw); font-style: var(--pos-sconj-fs); text-decoration: var(--pos-sconj-td); }
+.pos-sym { color: var(--pos-sym); font-weight: var(--pos-sym-fw); font-style: var(--pos-sym-fs); text-decoration: var(--pos-sym-td); }
+.pos-verb { color: var(--pos-verb); font-weight: var(--pos-verb-fw); font-style: var(--pos-verb-fs); text-decoration: var(--pos-verb-td); }
+.pos-x { color: var(--pos-x); font-weight: var(--pos-x-fw); font-style: var(--pos-x-fs); text-decoration: var(--pos-x-td); }
+
+/* Print stylesheet */
+@media print {
+  .app-header,
+  .app-nav,
+  .input-pane,
+  .pos-legend,
+  .toolbar {
+    display: none !important;
+  }
+  body {
+    background: white;
+    color: #24292f;
+  }
+  .output-pane {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

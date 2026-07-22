@@ -1,0 +1,42 @@
+{
+  "name": "Dark",
+  "version": 1,
+  "light": {
+    "ADJ":   { "color": "#2E7D32", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "ADP":   { "color": "#616161", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "ADV":   { "color": "#00838F", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "AUX":   { "color": "#E65100", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "CCONJ": { "color": "#37474F", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "DET":   { "color": "#5D4037", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "INTJ":  { "color": "#D81B60", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "NOUN":  { "color": "#1565C0", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "NUM":   { "color": "#4527A0", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "PART":  { "color": "#6D4C41", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "PRON":  { "color": "#AD1457", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "PROPN": { "color": "#6A1B9A", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "PUNCT": { "color": "inherit", "enabled": false, "bold": false, "italic": false, "underline": false },
+    "SCONJ": { "color": "#37474F", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "SYM":   { "color": "inherit", "enabled": false, "bold": false, "italic": false, "underline": false },
+    "VERB":  { "color": "#C62828", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "X":     { "color": "inherit", "enabled": false, "bold": false, "italic": false, "underline": false }
+  },
+  "dark": {
+    "ADJ":   { "color": "#B5CEA8", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "ADP":   { "color": "#9E9E9E", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "ADV":   { "color": "#4FC1FF", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "AUX":   { "color": "#CE9178", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "CCONJ": { "color": "#B0BEC5", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "DET":   { "color": "#D7BA7D", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "INTJ":  { "color": "#F48FB1", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "NOUN":  { "color": "#9CDCFE", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "NUM":   { "color": "#B39DDB", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "PART":  { "color": "#BCAAA4", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "PRON":  { "color": "#C586C0", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "PROPN": { "color": "#4EC9B0", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "PUNCT": { "color": "inherit", "enabled": false, "bold": false, "italic": false, "underline": false },
+    "SCONJ": { "color": "#B0BEC5", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "SYM":   { "color": "inherit", "enabled": false, "bold": false, "italic": false, "underline": false },
+    "VERB":  { "color": "#F48771", "enabled": true,  "bold": false, "italic": false, "underline": false },
+    "X":     { "color": "inherit", "enabled": false, "bold": false, "italic": false, "underline": false }
+  }
+}

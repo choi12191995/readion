@@ -1,0 +1,32 @@
+node_modules
+dist
+.vite
+*.local
+*.log
+
+# Editor
+.vscode
+!.vscode/extensions.json
+.idea
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test
+coverage
+test-results
+playwright-report
+
+# PWA
+dev-dist
+
+# Models & dictionaries (binary; fetched at runtime)
+public/models/*
+!public/models/.gitkeep
+public/dict/*
+!public/dict/.gitkeep
+
+# Cursor
+.cursor
