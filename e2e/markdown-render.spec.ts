@@ -120,47 +120,57 @@ test.describe('Markdown Rendering', () => {
 });
 
 test.describe('i18n', () => {
-  test('settings page has UI language selector', async ({ page }) => {
-    await page.goto('/settings');
+  test('header has UI language selector next to dark mode', async ({ page }) => {
+    await page.goto('/');
     await page.waitForTimeout(500);
 
-    const langSelect = page.locator('#ui-lang');
+    const langSelect = page.locator('.header-actions .locale-select');
     await expect(langSelect).toBeVisible();
 
-    // Should have auto + 3 language options
+    // Should have auto + 4 language options (en, zh, zh-tw, ja)
     const options = langSelect.locator('option');
     const count = await options.count();
-    expect(count).toBeGreaterThanOrEqual(4);
+    expect(count).toBeGreaterThanOrEqual(5);
+
+    // Dark mode toggle should be next to it
+    const darkToggle = page.locator('.header-actions .dark-toggle');
+    await expect(darkToggle).toBeVisible();
   });
 
   test('switching UI language updates nav text', async ({ page }) => {
-    await page.goto('/settings');
+    await page.goto('/');
     await page.waitForTimeout(500);
 
-    // Switch to Chinese
-    await page.locator('#ui-lang').selectOption('zh');
+    const langSelect = page.locator('.header-actions .locale-select');
+
+    // Switch to Simplified Chinese
+    await langSelect.selectOption('zh');
     await page.waitForTimeout(300);
 
-    // Nav should show Chinese text
     const navLinks = await page.locator('.app-nav a').allTextContents();
     expect(navLinks.some((t) => t.includes('阅读器'))).toBe(true);
     expect(navLinks.some((t) => t.includes('设置'))).toBe(true);
-    expect(navLinks.some((t) => t.includes('关于'))).toBe(true);
+
+    // Switch to Traditional Chinese
+    await langSelect.selectOption('zh-tw');
+    await page.waitForTimeout(300);
+
+    const navLinksTW = await page.locator('.app-nav a').allTextContents();
+    expect(navLinksTW.some((t) => t.includes('閱讀器'))).toBe(true);
+    expect(navLinksTW.some((t) => t.includes('設定'))).toBe(true);
 
     // Switch to Japanese
-    await page.locator('#ui-lang').selectOption('ja');
+    await langSelect.selectOption('ja');
     await page.waitForTimeout(300);
 
     const navLinksJa = await page.locator('.app-nav a').allTextContents();
     expect(navLinksJa.some((t) => t.includes('リーダー'))).toBe(true);
-    expect(navLinksJa.some((t) => t.includes('設定'))).toBe(true);
 
     // Switch back to English
-    await page.locator('#ui-lang').selectOption('en');
+    await langSelect.selectOption('en');
     await page.waitForTimeout(300);
 
     const navLinksEn = await page.locator('.app-nav a').allTextContents();
     expect(navLinksEn.some((t) => t.includes('Reader'))).toBe(true);
-    expect(navLinksEn.some((t) => t.includes('Settings'))).toBe(true);
   });
 });

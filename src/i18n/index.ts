@@ -1,16 +1,18 @@
 import { ref, computed } from 'vue';
 import en, { type MessageKey, type Messages } from './en';
 import zh from './zh';
+import zhTW from './zh-tw';
 import ja from './ja';
 
-export type Locale = 'en' | 'zh' | 'ja';
+export type Locale = 'en' | 'zh' | 'zh-tw' | 'ja';
 
-const localeMap: Record<Locale, Messages> = { en, zh, ja };
+const localeMap: Record<Locale, Messages> = { en, zh, 'zh-tw': zhTW, ja };
 
 export const LOCALE_LABELS: Record<Locale | 'auto', string> = {
   auto: 'Auto',
   en: 'English',
-  zh: '中文',
+  zh: '简体中文',
+  'zh-tw': '繁體中文',
   ja: '日本語',
 };
 
@@ -20,7 +22,10 @@ const STORAGE_KEY = 'readion:locale';
 function detectLocale(): Locale {
   if (typeof navigator === 'undefined') return 'en';
   for (const lang of navigator.languages ?? [navigator.language]) {
-    const code = lang.toLowerCase().split('-')[0];
+    const lower = lang.toLowerCase();
+    // Check full tag first for regional variants
+    if (lower === 'zh-tw' || lower === 'zh-hant' || lower === 'zh-hk' || lower === 'zh-mo') return 'zh-tw';
+    const code = lower.split('-')[0];
     if (code === 'zh') return 'zh';
     if (code === 'ja') return 'ja';
     if (code === 'en') return 'en';
@@ -28,11 +33,13 @@ function detectLocale(): Locale {
   return 'en';
 }
 
+const VALID_LOCALES = new Set<string>(['en', 'zh', 'zh-tw', 'ja']);
+
 /** Load persisted locale override (null means auto-detect). */
 function loadLocale(): Locale | null {
   try {
     const val = localStorage.getItem(STORAGE_KEY);
-    if (val === 'en' || val === 'zh' || val === 'ja') return val;
+    if (val && VALID_LOCALES.has(val)) return val as Locale;
   } catch { /* SSR / privacy mode */ }
   return null;
 }

@@ -2,10 +2,15 @@
 import { useSettingsStore } from '@/stores/settings';
 import { useRouter, useRoute } from 'vue-router';
 import { onMounted, onUnmounted } from 'vue';
-import { useI18n } from '@/i18n';
+import { useI18n, LOCALE_LABELS, type Locale } from '@/i18n';
 
 const settings = useSettingsStore();
-const { t } = useI18n();
+const { t, localeOverride, setLocale } = useI18n();
+
+function handleLocaleChange(e: Event): void {
+  const val = (e.target as HTMLSelectElement).value;
+  setLocale(val === 'auto' ? null : val as Locale);
+}
 const router = useRouter();
 const route = useRoute();
 
@@ -71,16 +76,37 @@ onUnmounted(() => {
           </router-link>
         </nav>
 
-        <button
-          class="dark-toggle"
-          :title="t('darkMode.prefix') + settings.darkMode"
-          :aria-label="t('darkMode.toggle')"
-          @click="cycleDarkMode"
-        >
-          <span v-if="settings.isDark">☀️</span>
-          <span v-else>🌙</span>
-          <span class="dark-label">{{ settings.darkMode }}</span>
-        </button>
+        <div class="header-actions">
+          <select
+            class="locale-select"
+            :value="localeOverride ?? 'auto'"
+            :title="t('settings.uiLanguage')"
+            @change="handleLocaleChange"
+          >
+            <option value="auto">
+              🌐 {{ t('settings.uiLangAuto') }}
+            </option>
+            <option
+              v-for="(label, code) in LOCALE_LABELS"
+              v-show="code !== 'auto'"
+              :key="code"
+              :value="code"
+            >
+              {{ label }}
+            </option>
+          </select>
+
+          <button
+            class="dark-toggle"
+            :title="t('darkMode.prefix') + settings.darkMode"
+            :aria-label="t('darkMode.toggle')"
+            @click="cycleDarkMode"
+          >
+            <span v-if="settings.isDark">☀️</span>
+            <span v-else>🌙</span>
+            <span class="dark-label">{{ settings.darkMode }}</span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -158,8 +184,29 @@ onUnmounted(() => {
   background: var(--color-bg);
 }
 
-.dark-toggle {
+.header-actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.locale-select {
+  padding: 2px var(--space-xs);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.locale-select:hover {
+  color: var(--color-text);
+  border-color: var(--color-accent);
+}
+
+.dark-toggle {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
