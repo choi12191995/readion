@@ -46,8 +46,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      // Provide a browser-compatible path module for kuromoji
-      path: 'path-browserify',
+      // Custom path shim for kuromoji (works in workers + main thread)
+      path: resolve(__dirname, 'src/core/path-shim.ts'),
     },
   },
   worker: {
