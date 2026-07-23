@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@/stores/settings';
 import { UPOS_TAGS, type UPos } from '@/core/upos';
-import { UPOS_LABELS } from '@/core/upos-labels';
+import { useI18n } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 
 const settings = useSettingsStore();
+const { t } = useI18n();
 
 function getChipStyle(tag: UPos) {
   const style = settings.currentPalette[tag];
@@ -16,22 +18,22 @@ function getChipStyle(tag: UPos) {
   <div
     class="pos-legend"
     role="toolbar"
-    aria-label="Part-of-speech legend"
+    :aria-label="t('legend.ariaLabel')"
   >
     <div class="legend-controls">
       <button
         class="legend-toggle-all"
-        title="Enable all tags"
+        :title="t('legend.allTitle')"
         @click="settings.setAllTags(true)"
       >
-        All
+        {{ t('legend.all') }}
       </button>
       <button
         class="legend-toggle-all"
-        title="Disable all tags"
+        :title="t('legend.noneTitle')"
         @click="settings.setAllTags(false)"
       >
-        None
+        {{ t('legend.none') }}
       </button>
     </div>
     <div class="legend-chips">
@@ -42,7 +44,7 @@ function getChipStyle(tag: UPos) {
         :class="{ disabled: !settings.currentPalette[tag]?.enabled }"
         :style="getChipStyle(tag)"
         :aria-pressed="settings.currentPalette[tag]?.enabled ?? false"
-        :title="`${UPOS_LABELS[tag].name} — click to toggle`"
+        :title="t('legend.chipTitle', { name: t(`upos.${tag}` as MessageKey) })"
         @click="settings.toggleTag(tag)"
       >
         <span class="chip-dot" />

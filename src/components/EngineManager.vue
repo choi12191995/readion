@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useEnginesStore } from '@/stores/engines';
 import { ref, onMounted } from 'vue';
+import { useI18n } from '@/i18n';
 
+const { t } = useI18n();
 const engines = useEnginesStore();
 const storageUsage = ref('');
 
@@ -22,7 +24,7 @@ function formatBytes(bytes: number): string {
 }
 
 function tierLabel(tier: 1 | 2): string {
-  return tier === 1 ? 'built-in' : 'download';
+  return tier === 1 ? t('engine.builtIn') : t('engine.download');
 }
 
 async function handleAction(engineId: string): Promise<void> {
@@ -39,16 +41,16 @@ onMounted(updateStorageInfo);
 
 <template>
   <div class="engine-manager">
-    <h3>Engines</h3>
+    <h3>{{ t('engine.title') }}</h3>
     <table class="engine-table">
       <thead>
         <tr>
-          <th>Engine</th>
-          <th>Languages</th>
-          <th>Type</th>
-          <th>Size</th>
-          <th>Status</th>
-          <th>Action</th>
+          <th>{{ t('engine.colEngine') }}</th>
+          <th>{{ t('engine.colLangs') }}</th>
+          <th>{{ t('engine.colType') }}</th>
+          <th>{{ t('engine.colSize') }}</th>
+          <th>{{ t('engine.colStatus') }}</th>
+          <th>{{ t('engine.colAction') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -64,18 +66,18 @@ onMounted(updateStorageInfo);
               :class="'tier-' + eng.tier"
             >{{ tierLabel(eng.tier) }}</span>
           </td>
-          <td>{{ eng.downloadBytes > 0 ? formatBytes(eng.downloadBytes) : '—' }}</td>
+          <td>{{ eng.downloadBytes > 0 ? formatBytes(eng.downloadBytes) : t('engine.noSize') }}</td>
           <td>
             <template v-if="engines.downloads.has(eng.id)">
               <span class="status-downloading">
-                Downloading {{ Math.round(((engines.downloads.get(eng.id)?.loaded ?? 0) / (engines.downloads.get(eng.id)?.total ?? 1)) * 100) }}%
+                {{ t('engine.downloading', { pct: String(Math.round(((engines.downloads.get(eng.id)?.loaded ?? 0) / (engines.downloads.get(eng.id)?.total ?? 1)) * 100)) }) }}
               </span>
             </template>
             <template v-else-if="engines.isLoaded(eng.id)">
-              <span class="status-loaded">Installed</span>
+              <span class="status-loaded">{{ t('engine.installed') }}</span>
             </template>
             <template v-else>
-              <span class="status-available">Available</span>
+              <span class="status-available">{{ t('engine.available') }}</span>
             </template>
           </td>
           <td>
@@ -84,7 +86,7 @@ onMounted(updateStorageInfo);
               :disabled="engines.downloads.has(eng.id)"
               @click="handleAction(eng.id)"
             >
-              {{ engines.isLoaded(eng.id) ? 'Delete' : 'Load' }}
+              {{ engines.isLoaded(eng.id) ? t('engine.delete') : t('engine.load') }}
             </button>
           </td>
         </tr>
@@ -94,7 +96,7 @@ onMounted(updateStorageInfo);
       v-if="storageUsage"
       class="storage-info"
     >
-      Storage: {{ storageUsage }}
+      {{ t('engine.storage') }}{{ storageUsage }}
     </p>
   </div>
 </template>

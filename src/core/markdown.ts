@@ -172,6 +172,10 @@ function wrapPlainWithTags(text: string, tokens: readonly TaggedToken[]): string
 
 /**
  * Render inline children back to HTML, wrapping tagged text segments with POS spans.
+ *
+ * IMPORTANT: The counter must increment under exactly the same conditions as
+ * collectInlineSegments — only for text nodes with non-empty content that are
+ * not inside autolink zones and not in SKIP_TOKEN_TYPES.
  */
 function renderInlineChildren(
   children: MarkdownIt.Token[],
@@ -196,6 +200,8 @@ function renderInlineChildren(
 
     switch (child.type) {
       case 'text': {
+        // Must match collectInlineSegments: only count non-empty text nodes
+        if (!child.content) break;
         const segId = `s${counter.n++}`;
         const segTags = tags.get(segId);
         if (segTags) {
@@ -316,6 +322,9 @@ export function renderHtml(
       continue;
     }
 
+    // Skip hidden tokens (e.g. tight-list paragraph wrappers)
+    if (token.hidden) continue;
+
     // Block-level open/close tokens
     if (token.nesting === 1) {
       let attrs = '';
@@ -323,6 +332,9 @@ export function renderHtml(
         const start = token.attrGet('start');
         if (start && start !== '1') attrs = ` start="${start}"`;
       }
+      // Preserve inline style attrs (e.g. table cell alignment)
+      const style = token.attrGet('style');
+      if (style) attrs += ` style="${escapeHtml(style)}"`;
       html += `<${token.tag}${attrs}>`;
       if (token.block) html += '\n';
     } else if (token.nesting === -1) {

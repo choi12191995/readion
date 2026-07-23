@@ -2,15 +2,17 @@
 import { useDocumentStore } from '@/stores/document';
 import PosTooltip from './PosTooltip.vue';
 import { ref } from 'vue';
+import { useI18n } from '@/i18n';
 
 const doc = useDocumentStore();
+const { t } = useI18n();
 const outputEl = ref<HTMLElement | null>(null);
 const tooltipTarget = ref<HTMLElement | null>(null);
 
 const SUPPORTED_LANGS = [
-  { code: 'en', label: 'English' },
-  { code: 'zh', label: 'Chinese' },
-  { code: 'ja', label: 'Japanese' },
+  { code: 'en', key: 'output.lang.en' as const },
+  { code: 'zh', key: 'output.lang.zh' as const },
+  { code: 'ja', key: 'output.lang.ja' as const },
 ];
 
 function handleMouseOver(e: Event): void {
@@ -44,16 +46,16 @@ async function copyAsHtml(): Promise<void> {
         'text/plain': textBlob,
       }),
     ]);
-    copyFeedback.value = 'Copied!';
+    copyFeedback.value = t('output.copied');
     setTimeout(() => { copyFeedback.value = ''; }, 2000);
   } catch {
     try {
       const text = outputEl.value?.innerText ?? '';
       await navigator.clipboard.writeText(text);
-      copyFeedback.value = 'Copied as text';
+      copyFeedback.value = t('output.copiedText');
       setTimeout(() => { copyFeedback.value = ''; }, 2000);
     } catch {
-      copyFeedback.value = 'Copy failed';
+      copyFeedback.value = t('output.copyFailed');
       setTimeout(() => { copyFeedback.value = ''; }, 2000);
     }
   }
@@ -73,18 +75,18 @@ function printView(): void {
         <select
           class="lang-select"
           :value="doc.langOverride ?? 'auto'"
-          title="Language"
+          :title="t('output.langTitle')"
           @change="setLangOverride"
         >
           <option value="auto">
-            Auto ({{ doc.detectedLang.toUpperCase() }})
+            {{ t('output.langAuto', { lang: doc.detectedLang.toUpperCase() }) }}
           </option>
           <option
             v-for="lang in SUPPORTED_LANGS"
             :key="lang.code"
             :value="lang.code"
           >
-            {{ lang.label }}
+            {{ t(lang.key) }}
           </option>
         </select>
         <span
@@ -97,19 +99,19 @@ function printView(): void {
           v-if="doc.wordCount > 0"
           class="status-words"
         >
-          · {{ doc.wordCount.toLocaleString() }} words
+          · {{ t('output.words', { count: doc.wordCount.toLocaleString() }) }}
         </span>
         <span
           v-if="doc.status === 'tagging'"
           class="status-progress"
         >
-          · coloring… {{ doc.progress }}%
+          · {{ t('output.coloring', { pct: String(doc.progress) }) }}
         </span>
         <span
           v-if="doc.truncated"
           class="status-truncated"
         >
-          · truncated to 200k chars
+          · {{ t('output.truncated') }}
         </span>
       </div>
       <div class="output-actions">
@@ -119,18 +121,18 @@ function printView(): void {
         >{{ copyFeedback }}</span>
         <button
           class="toolbar-btn"
-          title="Copy as rich HTML"
+          :title="t('output.copyHtmlTitle')"
           :disabled="!doc.renderedHtml"
           @click="copyAsHtml"
         >
-          📋 Copy HTML
+          📋 {{ t('output.copyHtml') }}
         </button>
         <button
           class="toolbar-btn"
-          title="Print reading view"
+          :title="t('output.printTitle')"
           @click="printView"
         >
-          🖨️ Print
+          🖨️ {{ t('output.print') }}
         </button>
       </div>
     </div>
@@ -140,7 +142,7 @@ function printView(): void {
       v-if="doc.status === 'error'"
       class="error-banner"
     >
-      ⚠️ {{ doc.errorMessage || 'An error occurred during tagging.' }}
+      ⚠️ {{ doc.errorMessage || t('output.errorFallback') }}
     </div>
 
     <div
@@ -148,7 +150,7 @@ function printView(): void {
       ref="outputEl"
       class="output-content"
       role="document"
-      aria-label="Highlighted reading view"
+      :aria-label="t('output.ariaLabel')"
       @mouseover="handleMouseOver"
       @mouseout="handleMouseOut"
       v-html="doc.renderedHtml"
@@ -159,13 +161,12 @@ function printView(): void {
       class="output-empty"
     >
       <div class="empty-content">
-        <h2>Highlight your text</h2>
+        <h2>{{ t('output.emptyTitle') }}</h2>
         <p>
-          Paste text or Markdown in the input pane, or drag and drop a file.
-          Words will be colored by their part of speech — like syntax highlighting for human language.
+          {{ t('output.emptyBody') }}
         </p>
         <p class="empty-hint">
-          Nouns, verbs, adjectives, and more — each gets its own color.
+          {{ t('output.emptyHint') }}
         </p>
       </div>
     </div>

@@ -1,46 +1,53 @@
 <script setup lang="ts">
-import { UPOS_TAGS } from '@/core/upos';
-import { UPOS_LABELS } from '@/core/upos-labels';
+import { UPOS_TAGS, type UPos } from '@/core/upos';
+import { sanitize } from '@/core/sanitize';
+import { useI18n } from '@/i18n';
+import type { MessageKey } from '@/i18n';
+
+const { t } = useI18n();
+
+function formatUposExample(tag: UPos): string {
+  const raw = t(`uposEx.${tag}` as MessageKey);
+  const escaped = raw
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return sanitize(escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'));
+}
 </script>
 
 <template>
   <div class="about-view">
-    <h1>About Readion</h1>
+    <h1>{{ t('about.title') }}</h1>
 
     <section>
-      <h2>What is Readion?</h2>
+      <h2>{{ t('about.whatTitle') }}</h2>
       <p>
-        Readion colors words by their part of speech — nouns, verbs, adjectives, and more —
-        the same way a code editor syntax-highlights programming languages.
-        It is a <strong>reading and learning aid</strong> for language learners, teachers,
-        editors, and anyone who benefits from visual anchors in text.
+        {{ t('about.whatP1') }}
+        {{ t('about.whatP2a') }}<strong>{{ t('about.whatP2em') }}</strong>{{ t('about.whatP2b') }}
       </p>
       <p class="note">
-        Color-coded grammar can make sentence structure easier to see.
-        It may help some readers read faster, but we make no scientific
-        speed-reading claims.
+        {{ t('about.whatNote') }}
       </p>
     </section>
 
     <section>
-      <h2>Privacy</h2>
+      <h2>{{ t('about.privacyTitle') }}</h2>
       <p>
-        Everything happens on your device. Your text is never sent to any server.
-        Readion has no backend, no accounts, no telemetry, and no cookies.
-        All data is stored in your browser's localStorage.
+        {{ t('about.privacyBody') }}
       </p>
     </section>
 
     <section>
-      <h2>Universal POS Tags</h2>
-      <p>Readion uses the 17 Universal POS tags from the Universal Dependencies project.</p>
+      <h2>{{ t('about.uposTitle') }}</h2>
+      <p>{{ t('about.uposBody') }}</p>
       <table class="upos-table">
         <thead>
           <tr>
-            <th>Tag</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Example</th>
+            <th>{{ t('about.colTag') }}</th>
+            <th>{{ t('about.colName') }}</th>
+            <th>{{ t('about.colDesc') }}</th>
+            <th>{{ t('about.colExample') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -49,34 +56,33 @@ import { UPOS_LABELS } from '@/core/upos-labels';
             :key="tag"
           >
             <td><code :class="'pos-' + tag.toLowerCase()">{{ tag }}</code></td>
-            <td>{{ UPOS_LABELS[tag].name }}</td>
-            <td>{{ UPOS_LABELS[tag].description }}</td>
-            <td class="example-col">
-              {{ UPOS_LABELS[tag].example }}
-            </td>
+            <td>{{ t(`upos.${tag}` as MessageKey) }}</td>
+            <td>{{ t(`uposDesc.${tag}` as MessageKey) }}</td>
+            <td
+              class="example-col"
+              v-html="formatUposExample(tag)"
+            />
           </tr>
         </tbody>
       </table>
     </section>
 
     <section>
-      <h2>Technology</h2>
+      <h2>{{ t('about.techTitle') }}</h2>
       <p>
-        Built with Vue 3, TypeScript, Vite, and Pinia. NLP engines:
-        wink-nlp (English), jieba-wasm (Chinese), kuromoji.js (Japanese).
-        Additional languages available via on-device ONNX models (transformers.js).
+        {{ t('about.techBody') }}
       </p>
     </section>
 
     <section>
-      <h2>Credits &amp; License</h2>
+      <h2>{{ t('about.creditsTitle') }}</h2>
       <p>
-        Readion is open-source software released under the
+        {{ t('about.creditsBody') }}
         <a
           href="https://opensource.org/licenses/MIT"
           target="_blank"
           rel="noopener noreferrer"
-        >MIT License</a>.
+        >{{ t('about.mitLicense') }}</a>.
       </p>
       <p>
         <a
@@ -84,7 +90,7 @@ import { UPOS_LABELS } from '@/core/upos-labels';
           target="_blank"
           rel="noopener noreferrer"
         >
-          View on GitHub
+          {{ t('about.viewGithub') }}
         </a>
       </p>
     </section>

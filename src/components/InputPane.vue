@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useDocumentStore } from '@/stores/document';
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useI18n } from '@/i18n';
 
 const doc = useDocumentStore();
+const { t } = useI18n();
 const isDragOver = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 let dragCounter = 0;
@@ -149,20 +151,20 @@ Color-coding parts of speech makes the **grammatical structure** visible at a gl
         :class="{ active: doc.mode === 'markdown' }"
         @click="toggleMode"
       >
-        {{ doc.mode === 'markdown' ? 'Markdown' : 'Plain text' }}
+        {{ doc.mode === 'markdown' ? t('input.markdown') : t('input.plain') }}
       </button>
       <button
         class="toolbar-btn"
-        title="Open file (Cmd/Ctrl+O)"
+        :title="t('input.openTitle')"
         @click="openFile"
       >
-        📂 Open
+        📂 {{ t('input.open') }}
       </button>
       <button
         class="toolbar-btn"
         @click="loadSample"
       >
-        📝 Try a sample
+        📝 {{ t('input.sample') }}
       </button>
       <input
         ref="fileInput"
@@ -176,7 +178,7 @@ Color-coding parts of speech makes the **grammatical structure** visible at a gl
     <textarea
       v-model="doc.input"
       class="text-input"
-      placeholder="Paste or type text here… or drag and drop a .md / .txt file"
+      :placeholder="t('input.placeholder')"
       spellcheck="false"
     />
   </div>

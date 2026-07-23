@@ -1,7 +1,7 @@
 import type { TaggerEngine, EngineMeta } from './types';
 import type { TaggedToken } from '../core/upos';
 import { ipadicToUPos } from './mappings/ipadic-upos';
-import { join as pathJoin } from '../core/path-shim';
+
 
 const meta: EngineMeta = {
   id: 'kuromoji-ja',

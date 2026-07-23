@@ -77,4 +77,56 @@ describe('renderHtml', () => {
     expect(html).toContain('<p>First.</p>');
     expect(html).toContain('<p>Second.</p>');
   });
+
+  it('should keep segments in sync for lists with bold text', () => {
+    const input = '1. **Visual recognition** — identifying letters\n2. **Phonological processing** — connecting text';
+    const segments = extractSegments(input, 'markdown');
+    // Each list item produces 2 segments: the bold text and the rest
+    expect(segments.length).toBe(4);
+    expect(segments[0]!.text).toBe('Visual recognition');
+    expect(segments[1]!.text).toBe(' — identifying letters');
+    expect(segments[2]!.text).toBe('Phonological processing');
+    expect(segments[3]!.text).toBe(' — connecting text');
+
+    // Build tags that preserve spaces via correct start/end positions
+    const tags = new Map(segments.map((seg) => {
+      const words = seg.text.split(/(\s+)/);
+      let offset = 0;
+      const tokenTags = words.filter((w) => w.trim()).map((w) => {
+        const start = seg.text.indexOf(w, offset);
+        const end = start + w.length;
+        offset = end;
+        return { text: w, upos: 'NOUN' as const, start, end };
+      });
+      return [seg.id, tokenTags] as const;
+    }));
+
+    const html = renderHtml(input, 'markdown', tags);
+    // Verify spaces between words are preserved
+    expect(html).toContain('>Visual</span>');
+    expect(html).toContain('>recognition</span>');
+    // The space between "Visual" and "recognition" should be in the HTML
+    expect(html).toMatch(/Visual<\/span>\s+<span/);
+    // Second list item should NOT contain text from the first
+    expect(html).toContain('>Phonological</span>');
+    // No hidden <p> tags inside tight list items
+    expect(html).not.toMatch(/<li>\s*<p>/);
+  });
+
+  it('should handle tables correctly', () => {
+    const input = '| A | B |\n|---|---|\n| cat | dog |';
+    const segments = extractSegments(input, 'markdown');
+    expect(segments.length).toBeGreaterThanOrEqual(4); // A, B, cat, dog
+
+    const tags = new Map(segments.map((seg) => {
+      return [seg.id, [{ text: seg.text, upos: 'NOUN' as const, start: 0, end: seg.text.length }]] as const;
+    }));
+
+    const html = renderHtml(input, 'markdown', tags);
+    expect(html).toContain('<table>');
+    expect(html).toContain('<th>');
+    expect(html).toContain('<td>');
+    expect(html).toContain('>cat</span>');
+    expect(html).toContain('>dog</span>');
+  });
 });

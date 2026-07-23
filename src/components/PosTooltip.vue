@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue';
-import { UPOS_LABELS } from '@/core/upos-labels';
 import { isUPos } from '@/core/upos';
+import { useI18n } from '@/i18n';
+import type { MessageKey } from '@/i18n';
+
+const { t } = useI18n();
 
 const props = defineProps<{
   target: HTMLElement | null;
@@ -19,9 +22,9 @@ function show(el: HTMLElement): void {
   const upos = el.dataset['upos'] ?? '';
   if (!isUPos(upos)) return;
 
-  const label = UPOS_LABELS[upos];
   const word = el.textContent ?? '';
-  content.value = `${word} — ${upos} · ${label.name}`;
+  const name = t(`upos.${upos}` as MessageKey);
+  content.value = `${word} — ${upos} · ${name}`;
 
   const rect = el.getBoundingClientRect();
   x.value = rect.left + rect.width / 2;

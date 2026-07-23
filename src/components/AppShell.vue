@@ -2,8 +2,10 @@
 import { useSettingsStore } from '@/stores/settings';
 import { useRouter, useRoute } from 'vue-router';
 import { onMounted, onUnmounted } from 'vue';
+import { useI18n } from '@/i18n';
 
 const settings = useSettingsStore();
+const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 
@@ -41,38 +43,38 @@ onUnmounted(() => {
           class="logo"
         >
           <span class="logo-read">Read</span><span class="logo-ion">ion</span>
-          <span class="logo-tagline">Rapid &amp; Easy</span>
+          <span class="logo-tagline">{{ t('brand.tagline') }}</span>
         </router-link>
 
         <nav
           class="app-nav"
           role="navigation"
-          aria-label="Main navigation"
+          :aria-label="t('nav.ariaLabel')"
         >
           <router-link
             to="/"
             :class="{ active: route.path === '/' }"
           >
-            Reader
+            {{ t('nav.reader') }}
           </router-link>
           <router-link
             to="/settings"
             :class="{ active: route.path === '/settings' }"
           >
-            Settings
+            {{ t('nav.settings') }}
           </router-link>
           <router-link
             to="/about"
             :class="{ active: route.path === '/about' }"
           >
-            About
+            {{ t('nav.about') }}
           </router-link>
         </nav>
 
         <button
           class="dark-toggle"
-          :title="`Color mode: ${settings.darkMode}`"
-          aria-label="Toggle color mode"
+          :title="t('darkMode.prefix') + settings.darkMode"
+          :aria-label="t('darkMode.toggle')"
           @click="cycleDarkMode"
         >
           <span v-if="settings.isDark">☀️</span>

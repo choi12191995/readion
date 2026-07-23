@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useSettingsStore, PRESETS, type TagStyle } from '@/stores/settings';
 import { UPOS_TAGS, type UPos } from '@/core/upos';
-import { UPOS_LABELS } from '@/core/upos-labels';
 import { ref } from 'vue';
+import { useI18n } from '@/i18n';
+import type { MessageKey } from '@/i18n';
 
+const { t } = useI18n();
 const settings = useSettingsStore();
 const importText = ref('');
 const importError = ref('');
@@ -39,7 +41,7 @@ function exportTheme(): void {
 function doImport(): void {
   importError.value = '';
   if (!importText.value.trim()) {
-    importError.value = 'Please paste theme JSON.';
+    importError.value = t('theme.importErrorEmpty');
     return;
   }
   const ok = settings.importTheme(importText.value);
@@ -47,12 +49,12 @@ function doImport(): void {
     showImport.value = false;
     importText.value = '';
   } else {
-    importError.value = 'Invalid theme format. Ensure it has name, version: 1, light, and dark palettes.';
+    importError.value = t('theme.importErrorInvalid');
   }
 }
 
 function resetAll(): void {
-  if (confirm('Reset all settings to defaults?')) {
+  if (confirm(t('theme.resetConfirm'))) {
     localStorage.removeItem('readion:settings:v1');
     location.reload();
   }
@@ -62,7 +64,7 @@ function resetAll(): void {
 <template>
   <div class="theme-editor">
     <section class="editor-section">
-      <h3>Presets</h3>
+      <h3>{{ t('theme.presets') }}</h3>
       <div class="preset-grid">
         <button
           v-for="preset in PRESETS"
@@ -84,7 +86,7 @@ function resetAll(): void {
     </section>
 
     <section class="editor-section">
-      <h3>Per-tag colors</h3>
+      <h3>{{ t('theme.tagColors') }}</h3>
       <div class="tag-list">
         <div
           v-for="tag in UPOS_TAGS"
@@ -104,7 +106,7 @@ function resetAll(): void {
           >
             {{ tag }}
           </span>
-          <span class="tag-desc">{{ UPOS_LABELS[tag].name }}</span>
+          <span class="tag-desc">{{ t(`upos.${tag}` as MessageKey) }}</span>
           <input
             type="color"
             class="tag-color"
@@ -115,7 +117,7 @@ function resetAll(): void {
           <button
             class="style-btn"
             :class="{ active: settings.currentPalette[tag]?.bold }"
-            title="Bold"
+            :title="t('theme.bold')"
             @click="updateStyle(tag, 'bold', !settings.currentPalette[tag]?.bold)"
           >
             B
@@ -123,7 +125,7 @@ function resetAll(): void {
           <button
             class="style-btn italic"
             :class="{ active: settings.currentPalette[tag]?.italic }"
-            title="Italic"
+            :title="t('theme.italic')"
             @click="updateStyle(tag, 'italic', !settings.currentPalette[tag]?.italic)"
           >
             I
@@ -131,7 +133,7 @@ function resetAll(): void {
           <button
             class="style-btn underline"
             :class="{ active: settings.currentPalette[tag]?.underline }"
-            title="Underline"
+            :title="t('theme.underline')"
             @click="updateStyle(tag, 'underline', !settings.currentPalette[tag]?.underline)"
           >
             U
@@ -141,21 +143,21 @@ function resetAll(): void {
     </section>
 
     <section class="editor-section">
-      <h3>Reading preferences</h3>
+      <h3>{{ t('theme.readingPrefs') }}</h3>
       <div class="pref-grid">
         <label class="pref-label">
-          Font
+          {{ t('theme.font') }}
           <select
             v-model="settings.font"
             class="pref-select"
           >
-            <option value="sans">Sans-serif</option>
-            <option value="serif">Serif</option>
-            <option value="system">System</option>
+            <option value="sans">{{ t('theme.fontSans') }}</option>
+            <option value="serif">{{ t('theme.fontSerif') }}</option>
+            <option value="system">{{ t('theme.fontSystem') }}</option>
           </select>
         </label>
         <label class="pref-label">
-          Size ({{ settings.fontSize }}px)
+          {{ t('theme.fontSize', { val: String(settings.fontSize) }) }}
           <input
             v-model.number="settings.fontSize"
             type="range"
@@ -165,7 +167,7 @@ function resetAll(): void {
           >
         </label>
         <label class="pref-label">
-          Line height ({{ settings.lineHeight.toFixed(1) }})
+          {{ t('theme.lineHeight', { val: String(settings.lineHeight) }) }}
           <input
             v-model.number="settings.lineHeight"
             type="range"
@@ -175,7 +177,7 @@ function resetAll(): void {
           >
         </label>
         <label class="pref-label">
-          Column width ({{ settings.columnWidth }}ch)
+          {{ t('theme.columnWidth', { val: String(settings.columnWidth) }) }}
           <input
             v-model.number="settings.columnWidth"
             type="range"
@@ -188,25 +190,25 @@ function resetAll(): void {
     </section>
 
     <section class="editor-section">
-      <h3>Data</h3>
+      <h3>{{ t('theme.data') }}</h3>
       <div class="data-actions">
         <button
           class="action-btn"
           @click="exportTheme"
         >
-          Export theme JSON
+          {{ t('theme.export') }}
         </button>
         <button
           class="action-btn"
           @click="showImport = !showImport"
         >
-          Import theme
+          {{ t('theme.import') }}
         </button>
         <button
           class="action-btn danger"
           @click="resetAll"
         >
-          Reset all settings
+          {{ t('theme.reset') }}
         </button>
       </div>
       <div
@@ -215,7 +217,7 @@ function resetAll(): void {
       >
         <textarea
           v-model="importText"
-          placeholder="Paste theme JSON here…"
+          :placeholder="t('theme.importPlaceholder')"
           class="import-textarea"
         />
         <p
@@ -228,7 +230,7 @@ function resetAll(): void {
           class="action-btn"
           @click="doImport"
         >
-          Apply
+          {{ t('theme.apply') }}
         </button>
       </div>
     </section>
