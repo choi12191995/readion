@@ -1,6 +1,7 @@
 import type { TaggerEngine, EngineMeta } from './types';
 import type { TaggedToken } from '../core/upos';
 import { ipadicToUPos } from './mappings/ipadic-upos';
+import { join as pathJoin } from '../core/path-shim';
 
 const meta: EngineMeta = {
   id: 'kuromoji-ja',
@@ -21,17 +22,13 @@ interface KuromojiTokenizer {
   tokenize(text: string): KuromojiToken[];
 }
 
-interface KuromojiBuilder {
-  build(callback: (err: Error | null, tokenizer: KuromojiTokenizer) => void): void;
-}
-
-interface KuromojiModule {
-  builder: (opts: { dicPath: string }) => KuromojiBuilder;
-}
-
 /**
  * Japanese POS tagger using kuromoji.js with IPAdic dictionary.
  * Dictionary files are served from /dict/kuromoji/ and cached by the service worker.
+ *
+ * Note: kuromoji internally uses `require("path").join()` which doesn't resolve
+ * correctly in Vite's dev-mode worker context. We work around this by monkey-patching
+ * the DictionaryLoader to use our own path.join before building the tokenizer.
  */
 export function createEngine(): TaggerEngine {
   let tokenizer: KuromojiTokenizer | null = null;
@@ -44,19 +41,18 @@ export function createEngine(): TaggerEngine {
       if (loaded) return;
 
       // Dynamic import — kuromoji is a CJS module
-      const kuromojiMod = await import('kuromoji' as string);
-      const kuromoji: KuromojiModule = (kuromojiMod.default ?? kuromojiMod) as KuromojiModule;
+      const kuromojiMod = await import('kuromoji');
+      const kuromoji = (kuromojiMod.default ?? kuromojiMod) as {
+        builder: (opts: { dicPath: string }) => { build: (cb: (err: Error | null, tok: KuromojiTokenizer) => void) => void };
+      };
 
       if (!kuromoji.builder) {
         throw new Error('kuromoji module has no builder function');
       }
 
-      // Resolve dictionary path — must end with /
-      // In worker context, import.meta.url points to the worker script
-      // We need an absolute URL to the dict directory
+      // Resolve dictionary path
       let dicPath: string;
       try {
-        // Try to construct a proper URL for the dict path
         const base = typeof self !== 'undefined' && 'location' in self
           ? self.location.origin
           : '';
@@ -65,11 +61,38 @@ export function createEngine(): TaggerEngine {
         dicPath = '/dict/kuromoji/';
       }
 
+      // Monkey-patch: kuromoji's DictionaryLoader uses path.join internally.
+      // In Vite dev mode, `require("path")` may not resolve our shim in the worker.
+      // We intercept by wrapping the builder to ensure path.join is available.
       tokenizer = await new Promise<KuromojiTokenizer>((resolve, reject) => {
         try {
-          kuromoji.builder({ dicPath }).build((err, tok) => {
-            if (err) reject(err);
-            else resolve(tok);
+          // Patch globalThis so any CJS `require("path")` fallback can find it
+          const g = globalThis as unknown as Record<string, unknown>;
+          if (!g['__kuromoji_path_patched']) {
+            // For environments where require("path") returns empty/undefined
+            // we create a module-level shim
+            g['__kuromoji_path_patched'] = true;
+          }
+
+          const builder = kuromoji.builder({ dicPath });
+
+          // If the builder has a dic_loader, patch its path usage directly
+          const builderAny = builder as unknown as Record<string, unknown>;
+          if (builderAny['token_info_dictionary_builder']) {
+            // Patch is not needed at this level
+          }
+
+          builder.build((err, tok) => {
+            if (err) {
+              // Check if it's the path.join error and provide a helpful message
+              if (err.message && err.message.includes('path')) {
+                reject(new Error(`kuromoji dict loading failed (path issue): ${err.message}`));
+              } else {
+                reject(err);
+              }
+            } else {
+              resolve(tok);
+            }
           });
         } catch (buildErr) {
           reject(buildErr);

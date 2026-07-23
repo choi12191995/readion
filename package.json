@@ -14,7 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "postinstall": "node -e \"const fs=require('fs');const p=require('path');const src=p.join('node_modules','kuromoji','dict');const dst=p.join('public','dict','kuromoji');if(fs.existsSync(src)){fs.mkdirSync(dst,{recursive:true});fs.readdirSync(src).forEach(f=>fs.copyFileSync(p.join(src,f),p.join(dst,f)))}\""
+    "postinstall": "node -e \"const fs=require('fs');const p=require('path');const src=p.join('node_modules','kuromoji','dict');const dst=p.join('public','dict','kuromoji');if(fs.existsSync(src)){fs.mkdirSync(dst,{recursive:true});fs.readdirSync(src).forEach(f=>fs.copyFileSync(p.join(src,f),p.join(dst,f)))}\" && node -e \"const fs=require('fs');const p=require('path');const glob=require('path');const wasmSrc=p.resolve('node_modules/jieba-wasm/pkg/web/jieba_rs_wasm_bg.wasm');const wasmDst=p.join('public','wasm','jieba_rs_wasm_bg.wasm');if(fs.existsSync(wasmSrc)){fs.mkdirSync(p.dirname(wasmDst),{recursive:true});fs.copyFileSync(wasmSrc,wasmDst)}\""
   },
   "dependencies": {
     "comlink": "^4.4.2",

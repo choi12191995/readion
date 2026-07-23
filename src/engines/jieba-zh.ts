@@ -25,9 +25,13 @@ export function createEngine(): TaggerEngine {
     async load() {
       if (loaded) return;
       const mod = await import('jieba-wasm');
-      // Initialize the WASM module
+      // Initialize the WASM module with explicit URL that works in both dev and prod
       if (typeof mod.default === 'function') {
-        await mod.default();
+        const base = typeof self !== 'undefined' && 'location' in self
+          ? self.location.origin
+          : '';
+        const wasmUrl = `${base}/wasm/jieba_rs_wasm_bg.wasm`;
+        await mod.default(wasmUrl);
       }
       jiebaModule = mod;
       loaded = true;

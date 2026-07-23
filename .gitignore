@@ -27,6 +27,7 @@ public/models/*
 !public/models/.gitkeep
 public/dict/kuromoji/*.gz
 public/dict/**/.gitkeep
+public/wasm/*.wasm
 
 # Cursor
 .cursor
