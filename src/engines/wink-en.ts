@@ -42,16 +42,24 @@ export function createEngine(): TaggerEngine {
       const its = nlp.its;
       const tokens: TaggedToken[] = [];
 
+      // Track character offset to compute correct positions in the original text.
+      // wink-nlp's its.span gives token-level indices, not character offsets,
+      // so we locate each token's text in the original string instead.
+      let charOffset = 0;
+
       doc.tokens().each((token) => {
         const value = token.out(its.value) as string;
         const rawPos = token.out(its.pos) as string;
-        const span = token.out(its.span) as unknown as [number, number];
 
         const upos: UPos = isUPos(rawPos) ? rawPos : 'X';
-        const start = span[0] ?? 0;
-        const end = (span[1] ?? start) + 1; // wink span end is inclusive
+
+        // Find this token in the original text, starting from our current offset
+        const idx = text.indexOf(value, charOffset);
+        const start = idx >= 0 ? idx : charOffset;
+        const end = start + value.length;
 
         tokens.push({ text: value, upos, start, end });
+        charOffset = end;
       });
 
       return tokens;
